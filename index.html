@@ -19,9 +19,19 @@
                 <div class="water-level" id="cistern-water"></div>
             </div>
 
+            <!-- Faro de Alarma en la Pared -->
+            <div class="alarm-beacon" id="diesel-alarm-beacon" title="Alarma General">
+                <div class="sound-wave"></div>
+            </div>
+
             <!-- Colectores y conexiones (Tuberías Generales) -->
             <div class="global-suction-header"></div>
-            <div class="global-discharge-header"><div class="flange-main discharge-out-flange"></div></div>
+            <div class="global-discharge-header">
+                <div class="flange-main discharge-out-flange"></div>
+                <div class="minor-leak-node" id="minor-leak-node" title="Clic para simular fuga menor">
+                    <div class="minor-water-spray" id="minor-leak-spray"></div>
+                </div>
+            </div>
             
             <div class="conn-main-suction"></div>
             <div class="conn-main-discharge"></div>
@@ -160,7 +170,8 @@
 
             <div class="electrical-cable-diesel"></div>
 
-            <div class="diesel-pump" id="diesel-pump">
+            <div class="diesel-pump" id="diesel-pump" title="Clic para averiar/reparar la bomba">
+                <div class="damage-crack"></div>
                 <div class="base-diesel"></div>
                 <div class="diesel-radiator"></div>
                 <div class="diesel-exhaust"><div class="muffler"></div></div>

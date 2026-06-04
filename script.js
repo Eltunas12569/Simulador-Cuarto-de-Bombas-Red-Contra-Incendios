@@ -43,6 +43,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const mainStopBtn = document.getElementById("main-stop-btn");
     const dieselStopBtn = document.getElementById("diesel-stop-btn");
 
+    const dieselAlarmBeacon = document.getElementById("diesel-alarm-beacon");
+
+    const minorLeakNode = document.getElementById("minor-leak-node");
+    const minorLeakSpray = document.getElementById("minor-leak-spray");
+
     // Variables del Sistema
     let currentPressure = 130; // Presión inicial ideal
     let startPressure = 120;   // Jockey arranca
@@ -54,7 +59,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let dieselStartPressure = 100; // Respaldo, arranca debajo de la principal
     let isDieselRunning = false;
+    let isDieselBroken = false; // Estado de avería
+    let dieselStartAttempts = 0; // Intentos de arranque
+    let dieselCrankTimer = 0;    // Temporizador de marcha
+    let dieselFailedAlertShown = false; // Bandera de alerta mostrada
 
+    let isMinorLeakActive = false; // Estado de la fuga menor
     let isReliefOpen = false; // Estado de la válvula de alivio
 
     // Abrir menú de configuración
@@ -149,6 +159,34 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Averiar/Reparar Bomba Diésel al hacerle clic
+    dieselPump.addEventListener("click", () => {
+        isDieselBroken = !isDieselBroken;
+        if (isDieselBroken) {
+            dieselPump.classList.add("broken");
+            // Apaga la bomba forzosamente si estaba corriendo
+            if (isDieselRunning) {
+                isDieselRunning = false;
+                dieselPump.classList.remove("running");
+                dieselStatusIndicator.classList.remove("on");
+            }
+        } else {
+            dieselPump.classList.remove("broken");
+            dieselStartAttempts = 0;
+            dieselCrankTimer = 0;
+            dieselFailedAlertShown = false;
+            dieselPump.classList.remove("cranking");
+            if (dieselAlarmBeacon) dieselAlarmBeacon.classList.remove("active");
+        }
+    });
+
+    // Botón de Fuga Menor
+    if (minorLeakNode) {
+        minorLeakNode.addEventListener("click", () => {
+            isMinorLeakActive = !isMinorLeakActive;
+        });
+    }
+
     // Activar/Desactivar Fuga girando las válvulas
     const maxValveRotation = 720; // 2 vueltas completas para máxima apertura
     let valveRotations = [0, 0];
@@ -206,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (leakFactor > 0 && currentPressure > 0) {
                 if (waterSprays[i]) {
                     waterSprays[i].style.opacity = leakFactor;
-                    waterSprays[i].style.width = `${currentPressure * 2.0 * leakFactor}px`; // Distancia variable (Escalado por la mayor presión max)
+                    waterSprays[i].style.width = `${currentPressure * 2.0 * leakFactor}px`; // Distancia variable (Escalado normal)
                 }
             } else {
                 if (waterSprays[i]) {
@@ -220,6 +258,23 @@ document.addEventListener("DOMContentLoaded", () => {
             // Fuga realista: el consumo de agua disminuye si hay poca presión en la red
             let leakDrain = (currentPressure / 130) * 4.0 * totalLeakFactor;
             pressureChange -= leakDrain;
+        }
+        
+        // Lógica de Fuga Menor
+        if (isMinorLeakActive && currentPressure > 0) {
+            // Fuga pequeña, resta mucha menos presión que las mangueras grandes
+            let minorLeakDrain = (currentPressure / 130) * 0.4; // Reducido a la mitad
+            pressureChange -= minorLeakDrain;
+            
+            if (minorLeakSpray) {
+                minorLeakSpray.style.opacity = 1;
+                minorLeakSpray.style.height = `${currentPressure * 0.45}px`; // Escala la longitud del chorro hacia abajo (30%)
+            }
+        } else {
+            if (minorLeakSpray) {
+                minorLeakSpray.style.opacity = 0;
+                minorLeakSpray.style.height = `0px`;
+            }
         }
         
         // Lógica de arranque automático Jockey
@@ -238,15 +293,37 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Lógica de arranque automático Diésel
         if (currentPressure <= dieselStartPressure && !isDieselRunning) {
-            isDieselRunning = true;
-            dieselPump.classList.add("running");
-            dieselStatusIndicator.classList.add("on");
+            if (!isDieselBroken) {
+                isDieselRunning = true;
+                dieselPump.classList.add("running");
+                dieselStatusIndicator.classList.add("on");
+                dieselStartAttempts = 0;
+                dieselCrankTimer = 0;
+                dieselFailedAlertShown = false;
+            } else {
+                // Secuencia de intento de arranque (6 intentos)
+                if (dieselStartAttempts < 6) {
+                    dieselCrankTimer++;
+                    if (dieselCrankTimer <= 10) {
+                        dieselPump.classList.add("cranking"); // 1 segundo dando marcha
+                    } else if (dieselCrankTimer <= 20) {
+                        dieselPump.classList.remove("cranking"); // 1 segundo de descanso
+                    } else {
+                        dieselCrankTimer = 0;
+                        dieselStartAttempts++;
+                    }
+                } else if (!dieselFailedAlertShown) {
+                    dieselPump.classList.remove("cranking");
+                    dieselFailedAlertShown = true;
+                    if (dieselAlarmBeacon) dieselAlarmBeacon.classList.add("active");
+                }
+            }
         }
         
         // Cada bomba inyecta presión; suavizamos el límite de entrega (Churn) para evitar que la aguja rebote bruscamente
         if (isRunning && currentPressure < stopPressure) pressureChange += Math.min(1.0, stopPressure - currentPressure); 
-        if (isMainRunning && currentPressure < 160) pressureChange += Math.min(2.5, 160 - currentPressure); 
-        if (isDieselRunning && currentPressure < 190) pressureChange += Math.min(4.5, 190 - currentPressure); 
+        if (isMainRunning && currentPressure < 185) pressureChange += Math.min(2.5, 185 - currentPressure); 
+        if (isDieselRunning && currentPressure < 195) pressureChange += Math.min(4.5, 195 - currentPressure); 
         
         currentPressure += pressureChange;
 
@@ -266,8 +343,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (currentPressure > 175) {
                 currentPressure -= (currentPressure - 175) * 0.8;
             }
-            // Drenaje más fuerte (-3.5) para vencer el empuje de la bomba principal (+2.5) y evitar estancamiento "estático"
-            currentPressure -= 3.5; 
+            // Drenaje super fuerte (-5.5) para vencer el empuje de CUALQUIER bomba (evitando estancamiento)
+            currentPressure -= 5.5; 
             
             // Forzamos el cierre exacto para apagar la animación de forma limpia
             if (currentPressure <= 130.05) {
@@ -286,8 +363,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Estabilización visual para simular la curva de la bomba cerrada (Churn Pressure)
         if (totalLeakFactor === 0 && currentPressure <= 175) {
-            if (isMainRunning && !isDieselRunning && currentPressure > 155) currentPressure = 160;
-            else if (isRunning && !isMainRunning && !isDieselRunning && currentPressure > stopPressure - 1) currentPressure = stopPressure;
+            if (isRunning && !isMainRunning && !isDieselRunning && currentPressure > stopPressure - 1) currentPressure = stopPressure;
         }
         
         // Lógica de apagado Jockey
@@ -298,7 +374,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         if (currentPressure < 0) currentPressure = 0;
-        if (currentPressure > 250) currentPressure = 250; // Nuevo límite máximo normativo extendido
+        if (currentPressure > 200) currentPressure = 200; // Límite máximo de presión a 200
         
         // Lógica de Alertas NFPA 20
         let isLeaking = totalLeakFactor > 0;
@@ -321,9 +397,9 @@ document.addEventListener("DOMContentLoaded", () => {
         mainPanelScreen.innerText = currentPressure.toFixed(0) + " PSI";
         dieselPanelScreen.innerText = currentPressure.toFixed(0) + " PSI";
         
-        // El manómetro va de 0 a 250 PSI (representado visualmente de -90deg a +90deg)
-        let displayPressure = currentPressure > 250 ? 250 : currentPressure;
-        let angle = (displayPressure / 250) * 180 - 90;
+        // El manómetro va de 0 a 200 PSI (representado visualmente de -90deg a +90deg)
+        let displayPressure = currentPressure > 200 ? 200 : currentPressure;
+        let angle = (displayPressure / 200) * 180 - 90;
         needle.style.transform = `rotate(${angle}deg)`;
         if (needleMain) needleMain.style.transform = `rotate(${angle}deg)`;
         if (needleDiesel) needleDiesel.style.transform = `rotate(${angle}deg)`;
