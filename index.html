@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bomba Jockey - Simulador</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="pump-room">
+        <div class="pump-system-wrapper">
+            
+            <!-- Cisterna -->
+            <div class="cistern">
+                <div class="cistern-label">CISTERNA</div>
+                <div class="water-level"></div>
+            </div>
+
+            <!-- Colectores y conexiones (Tuberías Generales) -->
+            <div class="global-suction-header"></div>
+            <div class="global-discharge-header"><div class="flange-main discharge-out-flange"></div></div>
+            
+            <div class="conn-main-suction"></div>
+            <div class="conn-main-discharge"></div>
+            <div class="conn-jockey-discharge"></div>
+            <div class="conn-diesel-suction"></div>
+            <div class="conn-diesel-discharge"></div>
+
+            <!-- Válvula de Prueba de Flujo (Cabezal de Pruebas) -->
+            <div class="test-header">
+                <div class="pipe test-pipe-vertical"></div>
+                <div class="pipe test-pipe-horizontal"><div class="flange-main test-flange"></div></div>
+                <div class="test-valve-container" id="test-valve-container" title="Clic para girar la válvula">
+                    <div class="valve-wheel" id="valve-wheel"><div class="valve-center"></div></div>
+                </div>
+                <div class="water-spray" id="water-spray"></div>
+                <div class="valve-slider-container">
+                    <label>APERTURA VÁLVULA</label>
+                    <input type="range" id="valve-slider" min="0" max="720" value="0">
+                </div>
+            </div>
+
+        <!-- Sistema Bomba Jockey -->
+        <div class="system-container">
+            <!-- Panel de Control Eléctrico -->
+            <div class="control-panel" id="control-panel" title="Clic para configurar presiones">
+                <div class="panel-header">PANEL JOCKEY</div>
+                <div class="panel-screen" id="panel-screen">100 PSI</div>
+                <div class="status-indicator" id="status-indicator"></div>
+                <div class="panel-btn">CONFIG</div>
+            </div>
+
+            <!-- Cable eléctrico conectando panel y manómetro -->
+            <div class="electrical-cable"></div>
+
+            <div class="jockey-pump" id="jockey-pump">
+                <!-- Capuchón superior del motor -->
+                <div class="motor-cap"></div>
+                
+                <!-- Cuerpo del Motor Eléctrico (con aletas de enfriamiento) -->
+                <div class="motor-body"></div>
+                
+                <!-- Acoplamiento entre motor y bomba -->
+                <div class="coupling"></div>
+                
+                <!-- Cuerpo de la Bomba (Multietapa vertical) -->
+                <div class="pump-stages">
+                    <!-- Manómetro de presión -->
+                    <div class="gauge">
+                        <div class="gauge-dial">
+                            <div class="gauge-zones"></div>
+                            <div class="gauge-glass"></div>
+                            <div class="gauge-needle" id="gauge-needle"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tuberías y Base -->
+                <div class="base-container">
+                    <div class="pipe left-pipe"><div class="flange"></div></div>
+                    <div class="base"></div>
+                    <div class="pipe right-pipe"><div class="flange"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sistema Bomba Principal Eléctrica -->
+        <div class="system-container main-pump-system">
+            <!-- Panel de Control Eléctrico Principal -->
+            <div class="control-panel main-panel" id="main-pump-panel">
+                <div class="panel-header">BOMBA PRINCIPAL</div>
+                <div class="panel-screen" id="main-panel-screen">100 PSI</div>
+                <div class="status-indicator" id="main-status-indicator"></div>
+                <div class="panel-btn">MANUAL</div>
+            </div>
+
+            <div class="electrical-cable-main"></div>
+
+            <div class="main-pump" id="main-pump">
+                <div class="base-main"></div>
+                <!-- Componentes del Motor -->
+                <div class="motor-main-back"></div>
+                <div class="motor-main"></div>
+                <!-- Acoplamiento -->
+                <div class="main-coupling"></div>
+                <!-- Carcasa y Tuberías -->
+                <div class="pump-casing-main">
+                    <!-- Manómetro Principal -->
+                    <div class="gauge gauge-main">
+                        <div class="gauge-dial">
+                            <div class="gauge-zones"></div>
+                            <div class="gauge-glass"></div>
+                            <div class="gauge-needle" id="gauge-needle-main"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pipe suction-pipe-main"><div class="flange-main suction-flange"></div></div>
+                <div class="pipe discharge-pipe-main"><div class="flange-main discharge-flange"></div></div>
+            </div>
+        </div>
+
+        <!-- Sistema Bomba Diésel de Respaldo -->
+        <div class="system-container diesel-pump-system">
+            <!-- Panel de Control Diésel -->
+            <div class="control-panel diesel-panel" id="diesel-pump-panel">
+                <div class="panel-header">BOMBA DIÉSEL</div>
+                <div class="panel-screen" id="diesel-panel-screen">100 PSI</div>
+                <div class="status-indicator" id="diesel-status-indicator"></div>
+                <div class="panel-btn">MANUAL</div>
+            </div>
+
+            <div class="electrical-cable-diesel"></div>
+
+            <div class="diesel-pump" id="diesel-pump">
+                <div class="base-diesel"></div>
+                <div class="diesel-radiator"></div>
+                <div class="diesel-exhaust"><div class="muffler"></div></div>
+                <div class="motor-diesel"></div>
+                <div class="main-coupling diesel-coupling"></div>
+                <div class="pump-casing-main diesel-casing">
+                    <!-- Manómetro Diésel -->
+                    <div class="gauge gauge-main">
+                        <div class="gauge-dial">
+                            <div class="gauge-zones"></div>
+                            <div class="gauge-glass"></div>
+                            <div class="gauge-needle" id="gauge-needle-diesel"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pipe suction-pipe-main"><div class="flange-main suction-flange"></div></div>
+                <div class="pipe discharge-pipe-main"><div class="flange-main discharge-flange"></div></div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Modal de configuración (Oculto por defecto) -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <h3>Panel de Control Jockey</h3>
+            <div class="input-group">
+                <label>Presión de Arranque (PSI):</label>
+                <input type="number" id="input-start" value="80">
+            </div>
+            <div class="input-group">
+                <label>Presión de Paro (PSI):</label>
+                <input type="number" id="input-stop" value="100">
+            </div>
+            <button id="btn-save">Guardar y Cerrar</button>
+            <hr>
+            <h4>Simulador del Sistema</h4>
+            <button id="btn-leak" class="leak-btn">Abrir Válvula de Prueba (Crear Fuga)</button>
+        </div>
+    </div>
+
+    <!-- Modal de configuración Bomba Principal (Oculto por defecto) -->
+    <div class="modal" id="main-settings-modal">
+        <div class="modal-content">
+            <h3>Panel Bomba Principal</h3>
+            <div class="input-group">
+                <label>Presión de Arranque (PSI):</label>
+                <input type="number" id="input-main-start" value="60">
+            </div>
+            <div class="input-group">
+                <label>Presión de Paro (PSI):</label>
+                <input type="number" id="input-main-stop" value="100">
+            </div>
+            <button id="btn-main-save">Guardar Cambios</button>
+        </div>
+    </div>
+
+    <!-- Modal de configuración Bomba Diésel -->
+    <div class="modal" id="diesel-settings-modal">
+        <div class="modal-content">
+            <h3>Panel Bomba Diésel</h3>
+            <div class="input-group">
+                <label>Presión de Arranque (PSI):</label>
+                <input type="number" id="input-diesel-start" value="40">
+            </div>
+            <div class="input-group">
+                <label>Presión de Paro (PSI):</label>
+                <input type="number" id="input-diesel-stop" value="100">
+            </div>
+            <button id="btn-diesel-save">Guardar Cambios</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
