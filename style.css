@@ -177,8 +177,11 @@ body {
     transform: translate(-50%, -50%);
     width: 40px; height: 40px;
     border-radius: 50%;
-    /* Zonas de presión: Rojo (0-80), Verde (80-100) */
-    background: conic-gradient(from -90deg, rgba(255,0,0,0.15) 0 96deg, rgba(0,255,0,0.2) 96deg 120deg, transparent 120deg 360deg);
+    /* Zonas de presión en un rango de 0-250 PSI representados en 180 grados:
+       - Amarillo < 65 PSI (46.8deg)
+       - Verde 65 a 175 PSI (126deg)
+       - Rojo > 175 PSI (180deg) */
+    background: conic-gradient(from -90deg, rgba(255,165,0,0.5) 0 46.8deg, rgba(0,255,0,0.4) 46.8deg 126deg, rgba(255,0,0,0.5) 126deg 180deg, transparent 180deg 360deg);
     z-index: 2;
 }
 
@@ -348,6 +351,14 @@ body {
 
 .panel-btn { background: #343a40; color: white; font-size: 10px; padding: 4px 8px; border-radius: 4px; }
 
+.panel-btn.stop-btn {
+    background: #dc3545;
+    border: 1px solid #7a0000;
+    font-weight: bold;
+    cursor: pointer;
+}
+.panel-btn.stop-btn:hover { background: #a71d2a; }
+
 /* --- MODAL DE CONFIGURACIÓN --- */
 .modal {
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -441,6 +452,22 @@ button:hover { background: #0056b3; }
     transform-origin: center center;
 }
 
+/* --- ALERTA NFPA 20 --- */
+.nfpa-warning {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    color: white;
+    z-index: 2000;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+    letter-spacing: 0.5px;
+}
+
 /* --- CISTERNA --- */
 .cistern {
     position: relative;
@@ -474,6 +501,16 @@ button:hover { background: #0056b3; }
     background: linear-gradient(to top, rgba(0, 100, 200, 0.8), rgba(0, 150, 255, 0.5));
     border-top: 3px solid rgba(255, 255, 255, 0.4);
     z-index: 1;
+    transform-origin: bottom;
+}
+
+.water-level.splashing {
+    animation: water-splash 0.2s infinite alternate;
+}
+
+@keyframes water-splash {
+    0% { transform: scaleY(1); border-top-color: rgba(255, 255, 255, 0.4); }
+    100% { transform: scaleY(1.02); border-top-color: rgba(255, 255, 255, 0.9); }
 }
 
 /* --- TUBERÍAS DE CONEXIÓN GLOBAL --- */
@@ -562,6 +599,79 @@ button:hover { background: #0056b3; }
     z-index: 0;
 }
 
+/* --- LÍNEA DE ALIVIO (BY-PASS A CISTERNA) --- */
+.relief-system {
+    position: absolute;
+    z-index: 20;
+}
+
+.relief-pipe-up {
+    position: absolute;
+    bottom: 580px;
+    left: 1700px;
+    width: 20px;
+    height: 60px;
+    background: linear-gradient(to right, var(--fire-red-dark), var(--fire-red-light), var(--fire-red-dark));
+    box-shadow: inset -2px 0 5px rgba(0,0,0,0.5);
+}
+
+.relief-valve {
+    position: absolute;
+    bottom: 600px;
+    left: 1690px;
+    width: 40px;
+    height: 20px;
+    background: linear-gradient(to bottom, #d4af37, #aa8000, #d4af37);
+    border-radius: 4px;
+    border: 2px solid #664d00;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    z-index: 5;
+}
+
+.relief-pipe-horizontal {
+    position: absolute;
+    bottom: 620px;
+    left: 100px;
+    width: 1620px;
+    height: 20px;
+    background: linear-gradient(to bottom, var(--fire-red-dark), var(--fire-red-light), var(--fire-red-dark));
+    box-shadow: inset 0 -2px 5px rgba(0,0,0,0.5);
+}
+
+.relief-pipe-down {
+    position: absolute;
+    bottom: 350px;
+    left: 100px;
+    width: 20px;
+    height: 270px;
+    background: linear-gradient(to right, var(--fire-red-dark), var(--fire-red-light), var(--fire-red-dark));
+    box-shadow: inset -2px 0 5px rgba(0,0,0,0.5);
+}
+
+.relief-water-spray {
+    position: absolute;
+    bottom: 240px;
+    left: 95px;
+    width: 30px;
+    height: 110px;
+    background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.9) 0%, rgba(150, 200, 255, 0.6) 20px, transparent 40px);
+    background-size: 100% 80px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 20;
+    filter: blur(2px);
+}
+
+.relief-water-spray.active {
+    opacity: 1;
+    animation: water-fall 0.3s infinite linear;
+}
+
+@keyframes water-fall {
+    from { background-position: 0 0; }
+    to { background-position: 0 80px; }
+}
+
 /* --- VÁLVULA DE PRUEBA Y SPRAY DE AGUA --- */
 .test-header {
     position: absolute;
@@ -576,15 +686,21 @@ button:hover { background: #0056b3; }
     bottom: 0px;
     left: 0;
     width: 40px;
-    height: 150px;
+    height: 380px;
     background: linear-gradient(to right, var(--fire-red-dark) 0%, var(--fire-red-light) 30%, var(--fire-red) 60%, var(--fire-red-dark) 100%);
     box-shadow: inset -5px 0 10px rgba(0, 0, 0, 0.5);
     border-radius: 0 20px 20px 0;
 }
 
+.valve-branch {
+    position: absolute;
+    left: 0;
+    width: 40px;
+}
+
 .test-pipe-horizontal {
     position: absolute;
-    bottom: 110px;
+    bottom: 0px;
     left: -60px;
     width: 60px;
     height: 40px;
@@ -600,7 +716,7 @@ button:hover { background: #0056b3; }
 
 .test-valve-container {
     position: absolute;
-    bottom: 95px;
+    bottom: -15px;
     left: -105px;
     width: 70px;
     height: 70px;
@@ -632,15 +748,25 @@ button:hover { background: #0056b3; }
 }
 
 .water-spray {
-    position: absolute; bottom: 115px; right: 145px; height: 30px; width: 0px;
-    background: linear-gradient(to left, rgba(255, 255, 255, 0.9) 0%, rgba(150, 200, 255, 0.6) 50%, transparent 100%);
-    border-radius: 15px; opacity: 0; transform-origin: right center;
+    position: absolute; bottom: -25px; right: 145px; height: 90px; width: 0px;
+    background: 
+        linear-gradient(to left, rgba(255, 255, 255, 0.9) 0%, rgba(150, 200, 255, 0.6) 50%, transparent 100%),
+        repeating-linear-gradient(to left, rgba(255, 255, 255, 0.9) 0%, rgba(150, 200, 255, 0.6) 15px, transparent 30px);
+    background-size: 100% 100%, 60px 100%;
+    opacity: 0; transform-origin: right center;
     transition: width 0.1s linear, opacity 0.1s linear; pointer-events: none; z-index: 11; filter: blur(2px);
+    clip-path: polygon(0% 0%, 100% 35%, 100% 65%, 0% 100%);
+    animation: horizontal-flow 0.2s infinite linear;
+}
+
+@keyframes horizontal-flow {
+    from { background-position: 0 0, 0 0; }
+    to { background-position: 0 0, -60px 0; }
 }
 
 .valve-slider-container {
     position: absolute;
-    bottom: 20px;
+    bottom: -60px;
     left: -130px;
     width: 120px;
     background: #343a40;
@@ -1003,4 +1129,20 @@ button:hover { background: #0056b3; }
     background: radial-gradient(circle, #444, transparent);
     border-radius: 50%;
     animation: smoke-puff 0.5s infinite ease-out;
+}
+
+@keyframes diesel-pump-vibration {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(-3px, 2px); }
+    50% { transform: translate(3px, -2px); }
+    75% { transform: translate(-3px, -2px); }
+    100% { transform: translate(0, 0); }
+}
+
+.diesel-pump.running {
+    animation: diesel-pump-vibration 0.05s infinite;
+}
+
+.diesel-pump.running .diesel-coupling::after {
+    animation: blur-spin 0.05s infinite linear;
 }

@@ -8,12 +8,15 @@
 </head>
 <body>
     <div class="pump-room">
+        <!-- Alerta NFPA 20 Flotante -->
+        <div id="nfpa-warning" class="nfpa-warning" style="display: none;"></div>
+
         <div class="pump-system-wrapper">
             
             <!-- Cisterna -->
             <div class="cistern">
                 <div class="cistern-label">CISTERNA</div>
-                <div class="water-level"></div>
+                <div class="water-level" id="cistern-water"></div>
             </div>
 
             <!-- Colectores y conexiones (Tuberías Generales) -->
@@ -26,17 +29,43 @@
             <div class="conn-diesel-suction"></div>
             <div class="conn-diesel-discharge"></div>
 
-            <!-- Válvula de Prueba de Flujo (Cabezal de Pruebas) -->
+            <!-- Línea de Alivio (Retorno a Cisterna) -->
+            <div class="relief-system" id="relief-system">
+                <div class="relief-pipe-up"></div>
+                <div class="relief-valve"></div>
+                <div class="relief-pipe-horizontal"></div>
+                <div class="relief-pipe-down"></div>
+                <div class="relief-water-spray" id="relief-water-spray"></div>
+            </div>
+
+            <!-- Salidas de Mangueras (Cabezal de Pruebas) -->
             <div class="test-header">
                 <div class="pipe test-pipe-vertical"></div>
-                <div class="pipe test-pipe-horizontal"><div class="flange-main test-flange"></div></div>
-                <div class="test-valve-container" id="test-valve-container" title="Clic para girar la válvula">
-                    <div class="valve-wheel" id="valve-wheel"><div class="valve-center"></div></div>
+                
+                <!-- Rama 1 -->
+                <div class="valve-branch" style="bottom: 190px;">
+                    <div class="pipe test-pipe-horizontal"><div class="flange-main test-flange"></div></div>
+                    <div class="test-valve-container" title="Clic para abrir manguera 1">
+                        <div class="valve-wheel"><div class="valve-center"></div></div>
+                    </div>
+                    <div class="water-spray"></div>
+                    <div class="valve-slider-container">
+                        <label>MANGUERA 1</label>
+                        <input type="range" class="valve-slider" min="0" max="720" value="0">
+                    </div>
                 </div>
-                <div class="water-spray" id="water-spray"></div>
-                <div class="valve-slider-container">
-                    <label>APERTURA VÁLVULA</label>
-                    <input type="range" id="valve-slider" min="0" max="720" value="0">
+
+                <!-- Rama 2 -->
+                <div class="valve-branch" style="bottom: 310px;">
+                    <div class="pipe test-pipe-horizontal"><div class="flange-main test-flange"></div></div>
+                    <div class="test-valve-container" title="Clic para abrir manguera 2">
+                        <div class="valve-wheel"><div class="valve-center"></div></div>
+                    </div>
+                    <div class="water-spray"></div>
+                    <div class="valve-slider-container">
+                        <label>MANGUERA 2</label>
+                        <input type="range" class="valve-slider" min="0" max="720" value="0">
+                    </div>
                 </div>
             </div>
 
@@ -45,7 +74,7 @@
             <!-- Panel de Control Eléctrico -->
             <div class="control-panel" id="control-panel" title="Clic para configurar presiones">
                 <div class="panel-header">PANEL JOCKEY</div>
-                <div class="panel-screen" id="panel-screen">100 PSI</div>
+                <div class="panel-screen" id="panel-screen">130 PSI</div>
                 <div class="status-indicator" id="status-indicator"></div>
                 <div class="panel-btn">CONFIG</div>
             </div>
@@ -89,9 +118,9 @@
             <!-- Panel de Control Eléctrico Principal -->
             <div class="control-panel main-panel" id="main-pump-panel">
                 <div class="panel-header">BOMBA PRINCIPAL</div>
-                <div class="panel-screen" id="main-panel-screen">100 PSI</div>
+                <div class="panel-screen" id="main-panel-screen">130 PSI</div>
                 <div class="status-indicator" id="main-status-indicator"></div>
-                <div class="panel-btn">MANUAL</div>
+                <div class="panel-btn stop-btn" id="main-stop-btn" title="El paro debe ser manual (NFPA 20)">PARO MANUAL</div>
             </div>
 
             <div class="electrical-cable-main"></div>
@@ -124,9 +153,9 @@
             <!-- Panel de Control Diésel -->
             <div class="control-panel diesel-panel" id="diesel-pump-panel">
                 <div class="panel-header">BOMBA DIÉSEL</div>
-                <div class="panel-screen" id="diesel-panel-screen">100 PSI</div>
+                <div class="panel-screen" id="diesel-panel-screen">130 PSI</div>
                 <div class="status-indicator" id="diesel-status-indicator"></div>
-                <div class="panel-btn">MANUAL</div>
+                <div class="panel-btn stop-btn" id="diesel-stop-btn" title="El paro debe ser manual (NFPA 20)">PARO MANUAL</div>
             </div>
 
             <div class="electrical-cable-diesel"></div>
@@ -160,16 +189,13 @@
             <h3>Panel de Control Jockey</h3>
             <div class="input-group">
                 <label>Presión de Arranque (PSI):</label>
-                <input type="number" id="input-start" value="80">
+                <input type="number" id="input-start" value="120">
             </div>
             <div class="input-group">
                 <label>Presión de Paro (PSI):</label>
-                <input type="number" id="input-stop" value="100">
+                <input type="number" id="input-stop" value="130">
             </div>
             <button id="btn-save">Guardar y Cerrar</button>
-            <hr>
-            <h4>Simulador del Sistema</h4>
-            <button id="btn-leak" class="leak-btn">Abrir Válvula de Prueba (Crear Fuga)</button>
         </div>
     </div>
 
@@ -179,11 +205,11 @@
             <h3>Panel Bomba Principal</h3>
             <div class="input-group">
                 <label>Presión de Arranque (PSI):</label>
-                <input type="number" id="input-main-start" value="60">
+                <input type="number" id="input-main-start" value="110">
             </div>
             <div class="input-group">
-                <label>Presión de Paro (PSI):</label>
-                <input type="number" id="input-main-stop" value="100">
+                <label>Presión de Paro:</label>
+                <span style="font-size: 13px; color: #dc3545; font-weight: bold;">MANUAL (NFPA 20)</span>
             </div>
             <button id="btn-main-save">Guardar Cambios</button>
         </div>
@@ -195,11 +221,11 @@
             <h3>Panel Bomba Diésel</h3>
             <div class="input-group">
                 <label>Presión de Arranque (PSI):</label>
-                <input type="number" id="input-diesel-start" value="40">
+                <input type="number" id="input-diesel-start" value="100">
             </div>
             <div class="input-group">
-                <label>Presión de Paro (PSI):</label>
-                <input type="number" id="input-diesel-stop" value="100">
+                <label>Presión de Paro:</label>
+                <span style="font-size: 13px; color: #dc3545; font-weight: bold;">MANUAL (NFPA 20)</span>
             </div>
             <button id="btn-diesel-save">Guardar Cambios</button>
         </div>
