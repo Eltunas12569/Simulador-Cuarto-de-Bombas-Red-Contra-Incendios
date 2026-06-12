@@ -19,11 +19,6 @@
                 <div class="water-level" id="cistern-water"></div>
             </div>
 
-            <!-- Faro de Alarma en la Pared -->
-            <div class="alarm-beacon" id="diesel-alarm-beacon" title="Alarma General">
-                <div class="sound-wave"></div>
-            </div>
-
             <!-- Colectores y conexiones (Tuberías Generales) -->
             <div class="global-suction-header"></div>
             <div class="global-discharge-header">
@@ -51,14 +46,17 @@
             <!-- Salidas de Mangueras (Cabezal de Pruebas) -->
             <div class="test-header">
                 <div class="pipe test-pipe-vertical"></div>
+                <div class="pipe test-pipe-top-horizontal"></div>
                 
                 <!-- Rama 1 -->
                 <div class="valve-branch" style="bottom: 190px;">
                     <div class="pipe test-pipe-horizontal"><div class="flange-main test-flange"></div></div>
-                    <div class="test-valve-container" title="Clic para abrir manguera 1">
+                    <div class="test-valve-container" title="Arrastra para abrir manguera 1">
                         <div class="valve-wheel"><div class="valve-center"></div></div>
                     </div>
-                    <div class="water-spray"></div>
+                    <div class="stretched-hose"></div>
+                    <div class="hose-nozzle"></div>
+                    <div class="water-spray hose-spray"></div>
                     <div class="valve-slider-container">
                         <label>MANGUERA 1</label>
                         <input type="range" class="valve-slider" min="0" max="720" value="0">
@@ -68,13 +66,69 @@
                 <!-- Rama 2 -->
                 <div class="valve-branch" style="bottom: 310px;">
                     <div class="pipe test-pipe-horizontal"><div class="flange-main test-flange"></div></div>
-                    <div class="test-valve-container" title="Clic para abrir manguera 2">
+                    <div class="test-valve-container" title="Arrastra para abrir manguera 2">
                         <div class="valve-wheel"><div class="valve-center"></div></div>
                     </div>
-                    <div class="water-spray"></div>
+                    <div class="stretched-hose"></div>
+                    <div class="hose-nozzle"></div>
+                    <div class="water-spray hose-spray"></div>
                     <div class="valve-slider-container">
                         <label>MANGUERA 2</label>
                         <input type="range" class="valve-slider" min="0" max="720" value="0">
+                    </div>
+                </div>
+
+                <!-- Manifold Vertical para Rociadores -->
+                <div class="pipe sprinkler-manifold"></div>
+
+                <!-- Rama Rociador 3 (Nivel Superior) -->
+                <div class="sprinkler-branch-horizontal" style="bottom: 480px;">
+                    <div class="pipe sprinkler-conn" style="left: -690px; width: 40px;"></div>
+                    <div class="sprinkler-valve-container" style="left: -735px; bottom: -25px;" title="Clic para abrir/cerrar rociador 3">
+                        <div class="valve-wheel"><div class="valve-center"></div></div>
+                    </div>
+                    <div class="pipe sprinkler-pipe-horizontal" style="left: -850px; width: 140px;"></div>
+                    
+                    <div class="sprinkler-label" style="left: -730px; bottom: 50px;">VÁLVULA R3</div>
+                    
+                    <!-- Cabezal Rociador 3 -->
+                    <div class="sprinkler-head" style="left: -850px; bottom: -180px; height: 180px;">
+                        <div class="sprinkler-pipe-short" style="height: 180px;"></div>
+                        <div class="water-spray sprinkler-water-spray"></div>
+                    </div>
+                </div>
+
+                <!-- Rama Rociador 2 (Nivel Medio) -->
+                <div class="sprinkler-branch-horizontal" style="bottom: 400px;">
+                    <div class="pipe sprinkler-conn" style="left: -690px; width: 40px;"></div>
+                    <div class="sprinkler-valve-container" style="left: -735px; bottom: -25px;" title="Clic para abrir/cerrar rociador 2">
+                        <div class="valve-wheel"><div class="valve-center"></div></div>
+                    </div>
+                    <div class="pipe sprinkler-pipe-horizontal" style="left: -1000px; width: 290px;"></div>
+                    
+                    <div class="sprinkler-label" style="left: -730px; bottom: 50px;">VÁLVULA R2</div>
+                    
+                    <!-- Cabezal Rociador 2 -->
+                    <div class="sprinkler-head" style="left: -1000px; bottom: -100px; height: 100px;">
+                        <div class="sprinkler-pipe-short" style="height: 100px;"></div>
+                        <div class="water-spray sprinkler-water-spray"></div>
+                    </div>
+                </div>
+
+                <!-- Rama Rociador 1 (Nivel Inferior) -->
+                <div class="sprinkler-branch-horizontal" style="bottom: 320px;">
+                    <div class="pipe sprinkler-conn" style="left: -690px; width: 40px;"></div>
+                    <div class="sprinkler-valve-container" style="left: -735px; bottom: -25px;" title="Clic para abrir/cerrar rociador 1">
+                        <div class="valve-wheel"><div class="valve-center"></div></div>
+                    </div>
+                    <div class="pipe sprinkler-pipe-horizontal" style="left: -1150px; width: 440px;"></div>
+                    
+                    <div class="sprinkler-label" style="left: -730px; bottom: 50px;">VÁLVULA R1</div>
+                    
+                    <!-- Cabezal Rociador 1 -->
+                    <div class="sprinkler-head" style="left: -1150px; bottom: -20px; height: 20px;">
+                        <div class="sprinkler-pipe-short" style="height: 20px;"></div>
+                        <div class="water-spray sprinkler-water-spray"></div>
                     </div>
                 </div>
             </div>
@@ -162,6 +216,11 @@
         <div class="system-container diesel-pump-system">
             <!-- Panel de Control Diésel -->
             <div class="control-panel diesel-panel" id="diesel-pump-panel">
+                <!-- Faro de Alarma en la Pared -->
+                <div class="alarm-beacon" id="diesel-alarm-beacon" title="Alarma General">
+                    <div class="sound-wave"></div>
+                </div>
+
                 <div class="panel-header">BOMBA DIÉSEL</div>
                 <div class="panel-screen" id="diesel-panel-screen">130 PSI</div>
                 <div class="status-indicator" id="diesel-status-indicator"></div>

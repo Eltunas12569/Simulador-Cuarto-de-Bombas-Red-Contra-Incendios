@@ -189,9 +189,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Activar/Desactivar Fuga girando las válvulas
     const maxValveRotation = 720; // 2 vueltas completas para máxima apertura
-    let valveRotations = [0, 0];
-    let isDraggingValves = [false, false];
-    let previousMouseYs = [0, 0];
+    let valveRotations = [];
+    let isDraggingValves = [];
+    let previousMouseYs = [];
+
+    // Inicializar los estados de las válvulas dinámicamente según la cantidad que exista
+    valveWheels.forEach(() => {
+        valveRotations.push(0);
+        isDraggingValves.push(false);
+        previousMouseYs.push(0);
+    });
 
     function updateValveLeak(index) {
         if (valveWheels[index]) valveWheels[index].style.transform = `rotate(${valveRotations[index]}deg)`;
@@ -216,7 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     window.addEventListener("mousemove", (e) => {
-        for(let i=0; i<2; i++) {
+        for(let i=0; i<valveWheels.length; i++) {
             if (!isDraggingValves[i]) continue;
             let deltaY = previousMouseYs[i] - e.clientY; // Mover ratón hacia arriba es positivo
             previousMouseYs[i] = e.clientY;
@@ -228,7 +235,25 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     window.addEventListener("mouseup", () => {
-        for(let i=0; i<2; i++) isDraggingValves[i] = false;
+        for(let i=0; i<valveWheels.length; i++) isDraggingValves[i] = false;
+    });
+
+    // Hacer clic en los rociadores para abrirlos al 100% de golpe
+    const sprinklerValves = document.querySelectorAll(".sprinkler-valve-container");
+    sprinklerValves.forEach((container) => {
+        let wheel = container.querySelector(".valve-wheel");
+        let wheelIndex = Array.from(valveWheels).indexOf(wheel);
+        
+        container.addEventListener("click", () => {
+            if (wheelIndex !== -1) {
+                if (valveRotations[wheelIndex] === 0) {
+                    valveRotations[wheelIndex] = maxValveRotation;
+                } else {
+                    valveRotations[wheelIndex] = 0;
+                }
+                updateValveLeak(wheelIndex);
+            }
+        });
     });
 
     // Bucle principal de simulación (se ejecuta cada 100 milisegundos)
@@ -237,14 +262,24 @@ document.addEventListener("DOMContentLoaded", () => {
         let totalLeakFactor = 0;
         
         // Las fugas drenan presión drásticamente sumando sus aperturas
-        for(let i=0; i<2; i++) {
+        for(let i=0; i<valveWheels.length; i++) {
             let leakFactor = valveRotations[i] / maxValveRotation; // Porcentaje de apertura (0.0 a 1.0)
-            totalLeakFactor += leakFactor;
+            
+            // Determinar si el agua es de un rociador o manguera principal
+            let isSprinkler = waterSprays[i] && waterSprays[i].classList.contains("sprinkler-water-spray");
+            
+            // Un rociador consume un 80% menos presión/flujo que una manguera abierta
+            let effectiveLeak = isSprinkler ? leakFactor * 0.2 : leakFactor; 
+            totalLeakFactor += effectiveLeak;
             
             if (leakFactor > 0 && currentPressure > 0) {
                 if (waterSprays[i]) {
                     waterSprays[i].style.opacity = leakFactor;
-                    waterSprays[i].style.width = `${currentPressure * 2.0 * leakFactor}px`; // Distancia variable (Escalado normal)
+                    if (isSprinkler) {
+                        waterSprays[i].style.width = `${currentPressure * 0.7 * leakFactor}px`; // Chorro mucho más corto (presión reducida)
+                    } else {
+                        waterSprays[i].style.width = `${currentPressure * 2.0 * leakFactor}px`; // Manguera principal chorro largo
+                    }
                 }
             } else {
                 if (waterSprays[i]) {
@@ -410,7 +445,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const wrapper = document.querySelector('.pump-system-wrapper');
     function scaleSimulator() {
         // El diseño necesita un canvas virtual de aprox 2250x800 para verse completo
-        const scale = Math.min(window.innerWidth * 0.95 / 2250, window.innerHeight * 0.95 / 800);
+        // Aplicamos un multiplicador de 0.9 para reducir el tamaño global un 10%
+        const scale = Math.min(window.innerWidth * 0.95 / 2250, window.innerHeight * 0.95 / 800) * 0.9;
         wrapper.style.transform = `scale(${scale})`;
     }
     window.addEventListener("resize", scaleSimulator);
